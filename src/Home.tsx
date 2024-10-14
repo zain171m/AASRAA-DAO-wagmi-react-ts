@@ -36,15 +36,14 @@ const Home = () => {
   let campaigns: Tcampaign[] = [];
   if (result.isFetched) {
     const ucampaigns: Tcampaign[] = result?.data as Tcampaign[];
-    const campaignsWithId = ucampaigns.map((campaign, index) => ({
-      ...campaign,
-      pId: index.toString(), // Convert index to string
+    // Add the campaign_id to each object using map
+    const campaignsWithId = ucampaigns.map((ucampaigns, index) => ({
+      ...ucampaigns,
+      pId: index,
     }));
-    //const campaigns: string[] = [];
     campaigns = campaignsWithId.filter(
       (campaign) => campaign.approved === true
     );
-    console.log(campaigns);
   }
   return (
     <div

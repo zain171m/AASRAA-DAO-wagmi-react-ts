@@ -7,7 +7,7 @@ export type Tcampaign = {
   deadline: number;
   amountCollected: bigint;
   imageUrl: string;
-  pId: string;
+  pId: number;
   approved: boolean;
   yesCount: bigint;
   noCount: bigint;

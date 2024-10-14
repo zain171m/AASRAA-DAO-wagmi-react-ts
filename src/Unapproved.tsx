@@ -32,12 +32,18 @@ const Unapproved = () => {
   if (result.error) {
     throw "campaings not loaded successfully";
   }
-
   let campaigns: Tcampaign[] = [];
   if (result.isFetched) {
     const ucampaigns: Tcampaign[] = result?.data as Tcampaign[];
-    campaigns = ucampaigns.filter((campaign) => campaign.approved === false);
-    console.log(campaigns);
+    // Add the campaign_id to each object using map
+    const campaignsWithId = ucampaigns.map((ucampaigns, index) => ({
+      ...ucampaigns,
+      pId: index,
+    }));
+
+    campaigns = campaignsWithId.filter(
+      (campaign) => campaign.approved === false
+    );
   }
 
   return (

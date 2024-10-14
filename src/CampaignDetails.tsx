@@ -1,5 +1,5 @@
 import CountBox from "./Countbox";
-import { useLocation, useParams } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { Tcampaign } from "./Types.ts";
 //import { daysLeft } from "./utils";
 import { formatEther, parseEther } from "viem";
@@ -15,11 +15,10 @@ const CampaignDetails = () => {
 
   const { writeContractAsync } = useWriteContract();
   const location = useLocation();
-  const { id } = useParams();
+  //const { id } = useParams();
   const { campaign } = location.state as { campaign: Tcampaign };
-  campaign.pId = id as string;
+  //campaign.pId = id as string;
   //const remainingDays = daysLeft(campaign.deadline);
-  console.log(campaign.pId);
 
   const result = useReadContract({
     abi,
@@ -41,9 +40,6 @@ const CampaignDetails = () => {
       const donations = result.data as [string[], bigint[]];
 
       if (donations) {
-        const numberOfDonations = donations[0]?.length;
-        console.log("Number of donations: ", numberOfDonations);
-
         // Update the state
         setDonors(donations[0]);
         setBalances(donations[1]);
