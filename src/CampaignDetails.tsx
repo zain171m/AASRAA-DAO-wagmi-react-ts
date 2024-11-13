@@ -6,19 +6,13 @@ import { formatEther, parseEther } from "viem";
 import { useWriteContract, useReadContract } from "wagmi";
 import abi from "./abi/abi.json";
 import { useEffect, useState } from "react";
+import Modal from "./Modal";
 
 const CampaignDetails = () => {
-  // const donate = async (pId, amount) => {
-  //   const data = await contract.call('donateCampaign', [pId], { value: ethers.utils.parseEther(amount)});
-  //   return data;
-  // }
-
+  const [showModal, setShowModal] = useState<string>();
   const { writeContractAsync } = useWriteContract();
   const location = useLocation();
-  //const { id } = useParams();
   const { campaign } = location.state as { campaign: Tcampaign };
-  //campaign.pId = id as string;
-  //const remainingDays = daysLeft(campaign.deadline);
 
   const result = useReadContract({
     abi,
@@ -296,13 +290,31 @@ const CampaignDetails = () => {
               const formObj = new FormData(e.currentTarget);
               console.log("arrived");
               const amount = formObj.get("amount")?.toString() ?? "0";
-              await writeContractAsync({
-                abi,
-                address: "0xC6E864c9816FfD3fcc1C501ECCFB3c83EbD62be1",
-                functionName: "donateCampaign",
-                args: [campaign.pId],
-                value: parseEther(amount),
-              });
+              try {
+                const tnx = await writeContractAsync({
+                  abi,
+                  address: "0xC6E864c9816FfD3fcc1C501ECCFB3c83EbD62be1",
+                  functionName: "donateCampaign",
+                  args: [campaign.pId],
+                  value: parseEther(amount),
+                });
+                setShowModal(
+                  `Transaction in progress with hash ${tnx.substring(
+                    0,
+                    10
+                  )}....`
+                );
+                // Wait for approximately 6 seconds for 3 block confirmations
+                await new Promise((resolve) => setTimeout(resolve, 7000));
+                window.location.reload();
+              } catch (error) {
+                setShowModal(
+                  `Transaction Failed with error ${(error as string).substring(
+                    0,
+                    20
+                  )}`
+                );
+              }
             }}
           >
             <div className="flex-1">
@@ -356,13 +368,23 @@ const CampaignDetails = () => {
               const nativeEvent = e.nativeEvent as SubmitEvent;
               const button = nativeEvent.submitter as HTMLButtonElement;
               const isApproved = button.value === "approve";
-
-              await writeContractAsync({
-                abi,
-                address: "0xC6E864c9816FfD3fcc1C501ECCFB3c83EbD62be1",
-                functionName: "castVote",
-                args: [campaign.pId, isApproved],
-              });
+              try {
+                const tnx = await writeContractAsync({
+                  abi,
+                  address: "0xC6E864c9816FfD3fcc1C501ECCFB3c83EbD62be1",
+                  functionName: "castVote",
+                  args: [campaign.pId, isApproved],
+                });
+                setShowModal(
+                  `Transaction in progress with hash ${tnx.substring(0, 4)}`
+                );
+                await new Promise((resolve) => setTimeout(resolve, 9000));
+                window.location.reload();
+              } catch (error) {
+                setShowModal(`Transaction Failed`);
+                await new Promise((resolve) => setTimeout(resolve, 9000));
+                setShowModal("");
+              }
             }}
           >
             <div className="flex-1">
@@ -415,6 +437,41 @@ const CampaignDetails = () => {
             </div>
           </form>
         )}
+
+        {showModal ? (
+          <Modal>
+            <div>
+              <div className="flex justify-center items-center w-full h-screen fixed bg-slate-900 bg-opacity-90 z-20">
+                <div className="w-full md:w-1/2 lg:w-1/3 bg-slate-800 p-12 mx-6 sm:mx-12 md:mx-18 rounded">
+                  <h1 className="text-center text-white text-2xl">
+                    {showModal}
+                  </h1>
+                  <div className="flex-col gap-4 w-full flex items-center justify-center">
+                    <div className="w-20 h-20 border-4 border-transparent text-blue-400 text-4xl animate-spin flex items-center justify-center border-t-blue-400 rounded-full">
+                      <div className="w-16 h-16 border-4 border-transparent text-red-400 text-2xl animate-spin flex items-center justify-center border-t-red-400 rounded-full"></div>
+                    </div>
+                  </div>
+
+                  {/* <button
+                      className="button"
+                      onClick={() => {
+                        // setAdoptedPet(pet);
+                        // navigate("/");
+                      }}
+                    >
+                      Yes
+                    </button> */}
+                  {/* <button
+                    className="text-white h-3 text-center"
+                    onClick={() => setShowModal("")}
+                  >
+                    Ok
+                  </button> */}
+                </div>
+              </div>
+            </div>
+          </Modal>
+        ) : null}
       </div>
     </div>
   );

@@ -1,5 +1,5 @@
 import { FiUser, FiDollarSign, FiGrid, FiRadio } from "react-icons/fi";
-import { BiMoneyWithdraw, BiLogOut } from "react-icons/bi";
+import { BiMoneyWithdraw} from "react-icons/bi";
 import { GiSplitCross } from "react-icons/gi";
 
 export const navlinks = [

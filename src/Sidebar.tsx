@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { navlinks } from "./constants";
 import { FaAccusoft } from "react-icons/fa";
 import { useLocation, useNavigate } from "react-router";

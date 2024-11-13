@@ -1,9 +1,51 @@
 import abi from "./abi/abi.json";
 import { useWriteContract } from "wagmi";
 import { parseEther } from "viem";
+import { useForm, SubmitHandler } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
+
+type Inputs = {
+  name: string;
+  title: string;
+  description: string;
+  deadline: Date;
+  target: string;
+  image: string;
+};
 
 const Create = () => {
   const { writeContractAsync } = useWriteContract();
+  const navigate = useNavigate();
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm<Inputs>();
+  const onSubmit: SubmitHandler<Inputs> = async (data) => {
+    console.log(data);
+    try {
+      const tx1 = await writeContractAsync({
+        abi,
+        address: "0xC6E864c9816FfD3fcc1C501ECCFB3c83EbD62be1",
+        functionName: "requestCampaign",
+        args: [
+          data.name,
+          data.title,
+          data.description,
+          new Date(data.deadline ?? "0").getTime(),
+          parseEther(data.target ?? "0"),
+          data.image,
+        ],
+      });
+      console.log("Transaction submitted:", tx1);
+      // Wait for approximately 6 seconds for 3 block confirmations
+      await new Promise((resolve) => setTimeout(resolve, 6000));
+      navigate("/");
+    } catch (error) {
+      console.error("Transaction failed:", error);
+    }
+  };
 
   return (
     <div className="mx-auto max-w-7xl p-5">
@@ -11,31 +53,24 @@ const Create = () => {
         <h1 className="text-2xl text-white">Create new campaign</h1>
       </div>
       <form
-        onSubmit={async (e) => {
-          e.preventDefault();
-          const formObj = new FormData(e.currentTarget);
-          console.log(formObj.get("name")?.toString());
-          console.log(formObj.get("title")?.toString());
-          console.log(formObj.get("description")?.toString());
-          console.log(
-            new Date(formObj.get("deadline")?.toString() ?? "0").getTime()
-          );
-          console.log(parseEther(formObj.get("target")?.toString() ?? "0"));
-          console.log(formObj.get("image")?.toString());
-          await writeContractAsync({
-            abi,
-            address: "0xC6E864c9816FfD3fcc1C501ECCFB3c83EbD62be1",
-            functionName: "requestCampaign",
-            args: [
-              formObj.get("name")?.toString(),
-              formObj.get("title")?.toString(),
-              formObj.get("description")?.toString(),
-              new Date(formObj.get("deadline")?.toString() ?? "0").getTime(),
-              parseEther(formObj.get("target")?.toString() ?? "0"),
-              formObj.get("image")?.toString(),
-            ],
-          });
-        }}
+        onSubmit={handleSubmit(onSubmit)}
+        // onSubmit={async (e) => {
+        //   e.preventDefault();
+        //   const formObj = new FormData(e.currentTarget);
+        //   await writeContractAsync({
+        //     abi,
+        //     address: "0xC6E864c9816FfD3fcc1C501ECCFB3c83EbD62be1",
+        //     functionName: "requestCampaign",
+        //     args: [
+        //       formObj.get("name")?.toString(),
+        //       formObj.get("title")?.toString(),
+        //       formObj.get("description")?.toString(),
+        //       new Date(formObj.get("deadline")?.toString() ?? "0").getTime(),
+        //       parseEther(formObj.get("target")?.toString() ?? "0"),
+        //       formObj.get("image")?.toString(),
+        //     ],
+        //   });
+        // }}
         //  form.name, //owner name
         // form.title, // title
         // form.description, // description
@@ -83,9 +118,9 @@ const Create = () => {
             <label className={`text-sm text-zinc-400`}>Title</label>
             <input
               id="title"
-              name="title"
               className="bg-transparent p-2 text-sm w-full outline-none border border-zinc-600 rounded-md"
               required
+              {...register("title", { required: true })}
             />
           </div>
         </div>
@@ -105,9 +140,9 @@ const Create = () => {
         <label className={`text-sm text-zinc-400`}>Description</label>
         <textarea
           id="description"
-          name="description"
           className="bg-transparent p-5 text-sm w-full outline-none border border-zinc-600 h-40 rounded-md"
           required
+          {...register("description", { required: true })}
         />
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 pt-5 pb-10">
           {/* <Input
@@ -124,10 +159,10 @@ const Create = () => {
             <label className={`text-sm text-zinc-400`}>Target</label>
             <input
               id="target"
-              name="target"
               type="number"
               className="bg-transparent p-2 text-sm w-full outline-none border border-zinc-600 rounded-md"
               required
+              {...register("target", { required: true })}
             />
           </div>
           {/* <Input
@@ -142,10 +177,10 @@ const Create = () => {
             <label className={`text-sm text-zinc-400`}>Deadline</label>
             <input
               id="deadline"
-              name="deadline"
               type="date"
               className="bg-transparent text-white p-2 text-sm w-full outline-none border border-zinc-600 rounded-md"
               required
+              {...register("deadline", { required: true })}
             />
           </div>
           {/* <Input
@@ -160,10 +195,9 @@ const Create = () => {
             <label className={`text-sm text-zinc-400`}>Image Link</label>
             <input
               id="image"
-              name="image"
-              type="url"
               className="bg-transparent p-2 text-sm w-full outline-none border border-zinc-600 rounded-md"
               required
+              {...register("image", { required: true })}
             />
           </div>
         </div>
